@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Mejorado FDOR</title>
+</head>
+<body>
+<div id="yt-player" style="width:100%;height:300px;background:#000;position:relative;"></div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+let ytPlayer;
+let isPlaying = false;
+let currentSong = { ytId: "kLFMCCJEPFE" };
+
+function onYouTubeIframeAPIReady(){
+  createPlayer();
+}
+
+function createPlayer(){
+  ytPlayer = new YT.Player('yt-player', {
+    videoId: currentSong.ytId,
+    playerVars: {
+      rel: 0,
+      modestbranding: 1,
+      autoplay: 1,
+      playsinline: 1,
+      enablejsapi: 1,
+      origin: window.location.origin
+    },
+    events: {
+      onReady: () => {
+        isPlaying = true;
+      },
+      onStateChange: (e) => {
+        isPlaying = (e.data === YT.PlayerState.PLAYING);
+      },
+      onError: (e) => {
+        handleVideoError(e.data);
+      }
+    }
+  });
+
+  setTimeout(() => {
+    if (!isPlaying) {
+      activateFallback();
+    }
+  }, 5000);
+}
+
+function handleVideoError(code){
+  const msgs = {
+    2: "ID inválido",
+    5: "Error del reproductor",
+    100: "Video eliminado",
+    101: "Bloqueado para embed",
+    150: "Bloqueado para embed"
+  };
+
+  const msg = msgs[code] || "Error desconocido";
+  showVideoError(msg);
+  activateFallback();
+}
+
+function showVideoError(msg){
+  document.getElementById('yt-player').innerHTML = `
+    <div style="
+      position:absolute;
+      inset:0;
+      background:#0b0f1a;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      text-align:center;
+    ">
+      <div style="font-size:40px;">⚠️</div>
+      <div style="color:white;">Error de reproducción</div>
+      <div style="color:#aaa;font-size:13px;">${msg}</div>
+      <button onclick="openInYoutube()" style="background:#FFC107;padding:10px;border:none;border-radius:6px;">
+        Abrir en YouTube
+      </button>
+    </div>
+  `;
+}
+
+function activateFallback(){
+  setTimeout(() => {
+    openInYoutube();
+  }, 1500);
+}
+
+function openInYoutube(){
+  window.open(`https://www.youtube.com/watch?v=${currentSong.ytId}`, "_blank");
+}
+</script>
+</body>
+</html>
